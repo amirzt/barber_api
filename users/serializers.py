@@ -24,18 +24,36 @@ class CountrySerializer(serializers.ModelSerializer):
 
 
 class CitySerializer(serializers.ModelSerializer):
+    country = CountrySerializer()
     class Meta:
         model = City
         fields = '__all__'
 
 
 class AddressSerializer(serializers.ModelSerializer):
-    country = CountrySerializer()
     city = CitySerializer()
 
     class Meta:
         model = Address
         fields = '__all__'
+
+
+class AddAddressSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Address
+        fields = ['city', 'title', 'address', 'latitude', 'longitude', 'postal_code']
+
+    def save(self, **kwargs):
+        address = Address(user=self.context.get('user'),
+                          city=self.validated_data['city'],
+                          title=self.validated_data['title'],
+                          address=self.validated_data['address'],
+                          latitude=self.validated_data['latitude'],
+                          longitude=self.validated_data['longitude'],
+                          postal_code=self.validated_data['postal_code'])
+        address.save()
+        return address
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -69,10 +87,10 @@ class VendorSerializer(serializers.ModelSerializer):
 class AddVendorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Vendor
-        fields = ['user', 'service_line', 'name', 'image']
+        fields = ['service_line', 'name', 'image']
 
     def save(self, **kwargs):
-        vendor = Vendor(user=self.validated_data['user'],
+        vendor = Vendor(user=self.context.get('user'),
                         service_line=self.validated_data['service_line'],
                         name=self.validated_data['name'],
                         image=self.validated_data['image'])

@@ -81,6 +81,10 @@ class Vendor(models.Model):
     name = models.CharField(max_length=100, null=True, blank=True)
     image = models.ImageField(upload_to='vendor/image/', default=None, null=True)
 
+    is_active = models.BooleanField(default=True)
+    start_hour = models.TimeField(null=True, default=None)
+    end_hour = models.TimeField(null=True, default=None)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
