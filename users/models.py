@@ -80,6 +80,7 @@ class Vendor(models.Model):
     service_line = models.ForeignKey(ServiceLine, on_delete=models.SET_NULL, null=True)
     name = models.CharField(max_length=100, null=True, blank=True)
     image = models.ImageField(upload_to='vendor/image/', default=None, null=True)
+    score = models.FloatField(default=0)
 
     is_active = models.BooleanField(default=True)
     start_hour = models.TimeField(null=True, default=None)

@@ -28,8 +28,8 @@ class Order(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE)
 
-    date = models.DateField()
-    time = models.TimeField()
+    date = models.DateField(null=True)
+    time = models.TimeField(null=True)
 
     price = models.FloatField(default=0)
     discount = models.FloatField(default=0)
@@ -46,7 +46,7 @@ class Order(models.Model):
 
 
     def __str__(self):
-        return self.user
+        return self.user.phone
 
 
 class OrderProduct(models.Model):
@@ -62,7 +62,7 @@ class OrderProduct(models.Model):
 
 
     def __str__(self):
-        return self.product
+        return self.product.name
 
 
 class Comment(models.Model):

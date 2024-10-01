@@ -3,8 +3,9 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from order.models import Order, OrderProduct, Comment
-from order.serializers import AddOrderSerializer, AddOrderProductSerializer, OrderSerializer, AddCommentSerializer
+from order.models import Order, OrderProduct, Comment, Transaction
+from order.serializers import AddOrderSerializer, AddOrderProductSerializer, OrderSerializer, AddCommentSerializer, \
+    CommentSerializer, AddTransactionSerializer, TransactionSerializer
 from users.models import CustomUser, Vendor, Address
 
 
@@ -20,37 +21,42 @@ def create_order(request):
                                   status=Order.OrderStatus.PENDING)
     except Order.DoesNotExist:
         serializer = AddOrderSerializer(data=request.data,
-                                        context={'user': user})
+                                        context={'user': user, 'vendor': vendor})
         if serializer.is_valid():
             order = serializer.save()
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    product_serializer = AddOrderProductSerializer(data=request.data['products'],
+    product_serializer = AddOrderProductSerializer(data=request.data,
                                                context={'order': order})
     if product_serializer.is_valid():
-        product = product_serializer.save()
-        order.price = order.price + product.price
-        order.product_type = product.product.type
+        order_product = product_serializer.save()
+
+        # calculate order price
+        order.price = order.price + order_product.price
+
+        # set order product type
+        order.product_type = order_product.product.type
         order.save()
         return Response(status=status.HTTP_200_OK)
     else:
         return Response(product_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['POST'])
+@api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def update_order(request):
-    order = Order.objects.get(id=request.data['id'])
+    user = CustomUser.objects.get(id=request.user.id)
 
-    if 'status' in request.data:
-        order.status = request.data['status']
+    if 'id' in request.data:
+        order = Order.objects.get(id=request.data['id'])
+    else:
+        order = Order.objects.get(user=request.user,
+                                  vendor_id=request.data['vendor'],
+                                  status=Order.OrderStatus.PENDING)
+
     if 'user_description' in request.data:
         order.user_description = request.data['user_description']
-    if 'vendor_description' in request.data:
-        order.vendor_description = request.data['vendor_description']
-    if 'admin_description' in request.data:
-        order.admin_description = request.data['admin_description']
     if 'payment_method' in request.data:
         order.payment_method = request.data['payment_method']
     if 'date' in request.data:
@@ -59,6 +65,12 @@ def update_order(request):
         order.time = request.data['time']
     if 'address' in request.data:
         order.address = Address.objects.get(id=request.data['address'])
+
+    if user.is_vendor:
+        if 'status' in request.data:
+            order.status = request.data['status']
+        if 'vendor_description' in request.data:
+            order.vendor_description = request.data['vendor_description']
 
     order.save()
     return Response(status=status.HTTP_200_OK)
@@ -89,6 +101,12 @@ def get_orders(request):
     else:
         orders = Order.objects.filter(user=user)
 
+    if 'status' in request.query_params:
+        orders = orders.filter(status=request.query_params.get('status'))
+    if 'product_type' in request.query_params:
+        orders = orders.filter(product_type=request.query_params.get('product_type'))
+    if 'date' in request.query_params:
+        orders = orders.filter(date=request.query_params.get('date'))
     return Response(OrderSerializer(orders, many=True).data)
 
 
@@ -97,11 +115,15 @@ def get_orders(request):
 def add_comment(request):
     order = Order.objects.get(id=request.data['order'])
     user = CustomUser.objects.get(id=request.user.id)
+    vendor = Vendor.objects.get(id=order.vendor.id)
     serializer = AddCommentSerializer(data=request.data,
                                       context={'order': order,
-                                               'user': user})
+                                               'user': user,
+                                               'vendor': vendor})
     if serializer.is_valid():
-        serializer.save()
+        comment = serializer.save()
+        vendor.score = (comment.rating + vendor.score) / 2
+        vendor.save()
         return Response(status=status.HTTP_200_OK)
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -116,9 +138,9 @@ def get_comments(request):
     else:
         vendor = Vendor.objects.get(id=request.query_params.get('vendor'))
 
-    orders = Order.objects.filter(vendor=vendor)
+    comments = Comment.objects.filter(vendor=vendor)
 
-    return Response(OrderSerializer(orders, many=True).data)
+    return Response(CommentSerializer(comments, many=True).data)
 
 
 @api_view(['PUT'])
@@ -129,5 +151,39 @@ def reply_comment(request):
     cm.reply = request.data['reply']
     cm.save()
     return Response(status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def pay(request):
+    order = Order.objects.get(id=request.data['order'])
+    order.status = Order.OrderStatus.ACCEPTING
+    order.save()
+
+    # save transaction
+    serializer = AddTransactionSerializer(data={"order": order.id,
+                                                "payment_status": Transaction.PaymentStatus.SUCCESS,
+                                                "tracking_code": "1234"})
+    if serializer.is_valid():
+        serializer.save()
+        return Response(status=status.HTTP_200_OK)
+    else:
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_transactions(request):
+    user = CustomUser.objects.get(id=request.user.id)
+    if user.is_vendor:
+        transactions = Transaction.objects.filter(order__vendor__user=user)
+    else:
+        transactions = Transaction.objects.filter(order__user=user)
+    if 'payment_status' in request.query_params:
+        transactions = transactions.filter(payment_status=request.query_params.get('payment_status'))
+    if 'date' in request.query_params:
+        transactions = transactions.filter(created_at=request.query_params.get('date'))
+    return Response(TransactionSerializer(transactions, many=True).data)
+
 
 

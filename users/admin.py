@@ -20,7 +20,7 @@ class VendorAdmin(admin.ModelAdmin):
 
 @admin.register(Customer)
 class CustomerAdmin(admin.ModelAdmin):
-    list_display = ('image', 'user', 'created_at', 'updated_at')
+    list_display = ('user', 'image', 'created_at', 'updated_at')
     search_fields = ('user__name', 'user__phone')
     fields = ('user', 'image')
 
