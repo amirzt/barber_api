@@ -101,3 +101,14 @@ class Customer(models.Model):
 
     def __str__(self):
         return self.user.phone
+
+
+class Wallet(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    balance = models.FloatField(default=0)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.user.phone

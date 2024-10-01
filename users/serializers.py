@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from users.models import CustomUser, Address, Country, City, Vendor, ServiceLine, Customer
+from users.models import CustomUser, Address, Country, City, Vendor, ServiceLine, Customer, Wallet
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
@@ -14,6 +14,13 @@ class RegistrationSerializer(serializers.ModelSerializer):
                           is_vendor=self.validated_data['is_vendor'])
         user.set_password(self.validated_data['password'])
         user.save()
+
+        wallet = Wallet(user=user)
+        wallet.save()
+
+        if not user.is_vendor:
+            customer = Customer(user=user)
+            customer.save()
         return user
 
 
@@ -56,17 +63,29 @@ class AddAddressSerializer(serializers.ModelSerializer):
         return address
 
 
+class WalletSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Wallet
+        fields = '__all__'
+
 class UserSerializer(serializers.ModelSerializer):
     address = serializers.SerializerMethodField('get_address')
+    wallet = serializers.SerializerMethodField('get_wallet')
 
     @staticmethod
     def get_address(obj):
         addresses = Address.objects.filter(user=obj)
         return AddressSerializer(addresses, many=True).data
 
+
+    @staticmethod
+    def get_wallet(obj):
+        wallet = Wallet.objects.get(user=obj)
+        return WalletSerializer(wallet).data
+
     class Meta:
         model = CustomUser
-        fields = ['phone', 'name', 'image', 'is_vendor', 'address']
+        fields = ['phone', 'name', 'image', 'is_vendor', 'address', 'wallet']
 
 
 class ServiceLineSerializer(serializers.ModelSerializer):
