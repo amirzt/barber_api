@@ -77,7 +77,6 @@ class Address(models.Model):
 
 class Vendor(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
-    service_line = models.ForeignKey(ServiceLine, on_delete=models.SET_NULL, null=True)
     name = models.CharField(max_length=100, null=True, blank=True)
     image = models.ImageField(upload_to='vendor/image/', default=None, null=True)
     score = models.FloatField(default=0)
@@ -92,6 +91,13 @@ class Vendor(models.Model):
     def __str__(self):
         return self.name
 
+
+class VendorServiceLine(models.Model):
+    vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE)
+    service_line = models.ForeignKey(ServiceLine, on_delete=models.CASCADE)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
 class Customer(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)

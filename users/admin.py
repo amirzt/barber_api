@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from users.models import CustomUser, Vendor, Customer, Address, Country, City, ServiceLine, Wallet
+from users.models import CustomUser, Vendor, Customer, Address, Country, City, ServiceLine, Wallet, VendorServiceLine
 
 
 @admin.register(CustomUser)
@@ -57,5 +57,7 @@ class WalletAdmin(admin.ModelAdmin):
     list_display = ('user', 'balance', 'updated_at')
     search_fields = ('user__name', 'user__phone')
     fields = ('user', 'balance')
+
+admin.site.register(VendorServiceLine)
 
 

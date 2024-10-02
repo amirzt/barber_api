@@ -106,11 +106,10 @@ class VendorSerializer(serializers.ModelSerializer):
 class AddVendorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Vendor
-        fields = ['service_line', 'name', 'image']
+        fields = ['name', 'image']
 
     def save(self, **kwargs):
         vendor = Vendor(user=self.context.get('user'),
-                        service_line=self.validated_data['service_line'],
                         name=self.validated_data['name'],
                         image=self.validated_data['image'])
         vendor.save()
