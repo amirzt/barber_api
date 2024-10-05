@@ -37,6 +37,7 @@ def register(request):
             user = user_serializer.save()
 
             user.is_active = True
+            user.set_password(request.data['password'])
             user.save()
 
             token, created = Token.objects.get_or_create(user=user)
@@ -63,7 +64,9 @@ def register_vendor(request):
 
         if serializer.is_valid():
             vendor = serializer.save()
-
+            if 'image' in request.data:
+                vendor.image = request.data['image']
+                vendor.save()
             # save serviceLines
 
             id_list = request.data.get('id_list')
@@ -122,8 +125,6 @@ def profile(request):
                 vendor.name = request.data['name']
             if 'vendor_image' in request.data:
                 vendor.image = request.data['vendor_image']
-            if 'service_line' in request.data:
-                vendor.service_line = ServiceLine.objects.get(id=request.data['service_line'])
             if 'is_active' in request.data:
                 vendor.is_active = request.data['is_active']
             if 'start_hour' in request.data:

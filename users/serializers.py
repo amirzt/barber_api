@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from users.models import CustomUser, Address, Country, City, Vendor, ServiceLine, Customer, Wallet
+from users.models import CustomUser, Address, Country, City, Vendor, ServiceLine, Customer, Wallet, VendorServiceLine
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
@@ -94,9 +94,20 @@ class ServiceLineSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class VendorServiceLineSerializer(serializers.ModelSerializer):
+    service_line = ServiceLineSerializer()
+    class Meta:
+        model = VendorServiceLine
+        fields = '__all__'
+
 class VendorSerializer(serializers.ModelSerializer):
     user = UserSerializer()
-    service_line = ServiceLineSerializer()
+    service_line = serializers.SerializerMethodField('get_service_lines')
+
+    @staticmethod
+    def get_service_lines(self):
+        lines = VendorServiceLine.objects.filter(vendor=self)
+        return VendorServiceLineSerializer(lines, many=True).data
 
     class Meta:
         model = Vendor
@@ -106,12 +117,11 @@ class VendorSerializer(serializers.ModelSerializer):
 class AddVendorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Vendor
-        fields = ['name', 'image']
+        fields = ['name']
 
     def save(self, **kwargs):
         vendor = Vendor(user=self.context.get('user'),
-                        name=self.validated_data['name'],
-                        image=self.validated_data['image'])
+                        name=self.validated_data['name'])
         vendor.save()
         return vendor
 
