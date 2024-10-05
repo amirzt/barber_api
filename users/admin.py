@@ -15,7 +15,7 @@ class CustomUserAdmin(admin.ModelAdmin):
 class VendorAdmin(admin.ModelAdmin):
     list_display = ('name', 'user', 'created_at', 'updated_at')
     search_fields = ('name', 'user__name', 'user__phone')
-    fields = ('name', 'user', 'service_line', 'image')
+    fields = ('name', 'user', 'image')
 
 
 @admin.register(Customer)
