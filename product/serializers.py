@@ -15,7 +15,7 @@ class ProductImageSerializer(serializers.ModelSerializer):
         return image
 
 
-class ProductSerializer(serializers.Serializer):
+class ProductSerializer(serializers.ModelSerializer):
     vendor = VendorSerializer()
     service_line = ServiceLineSerializer()
     images = serializers.SerializerMethodField('get_images')
@@ -26,7 +26,7 @@ class ProductSerializer(serializers.Serializer):
 
     class Meta:
         model = Product
-        fields = ['vendor', 'service_line', 'name', 'description', 'type', 'price', 'stock', 'discount', 'images']
+        fields = '__all__'
 
 
 class AddProductSerializer(serializers.ModelSerializer):
