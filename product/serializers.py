@@ -19,10 +19,15 @@ class ProductSerializer(serializers.ModelSerializer):
     vendor = VendorSerializer()
     service_line = ServiceLineSerializer()
     images = serializers.SerializerMethodField('get_images')
+    customizations = serializers.SerializerMethodField('get_customizations')
 
     @staticmethod
     def get_images(obj):
         return ProductImageSerializer(ProductImage.objects.filter(product=obj), many=True).data
+
+    @staticmethod
+    def get_customizations(obj):
+        return ProductCustomizationSerializer(ProductCustomization.objects.filter(product=obj), many=True).data
 
     class Meta:
         model = Product
