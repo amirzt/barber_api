@@ -158,3 +158,11 @@ def address(request):
         ad = Address.objects.get(id=request.data['id'])
         ad.delete()
         return Response(status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def change_admin_password(request):
+    user = CustomUser.objects.get(phone=request.data['phone'])
+    user.set_password(request.data['password'])
+    user.save()
+    return Response(status=status.HTTP_200_OK)
