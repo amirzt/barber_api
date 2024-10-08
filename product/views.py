@@ -38,8 +38,8 @@ def add_product(request):
 
     serializer = AddProductSerializer(data=request.data, context={'vendor': vendor})
     if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data)
+        product = serializer.save()
+        return Response({"product_id": product.id}, status=status.HTTP_200_OK)
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
