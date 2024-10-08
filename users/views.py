@@ -15,7 +15,7 @@ def register(request):
     try:
         user = CustomUser.objects.get(phone=request.data['phone'])
 
-        if user.check_password(request.POST.get('password')):
+        if user.check_password(request.data['password']):
             user.is_active = True
             user.save()
 
