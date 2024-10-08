@@ -111,3 +111,7 @@ def customization(request):
             return Response(serializer.data)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    elif request.method == 'DELETE':
+        custom = ProductCustomization.objects.get(id=request.data['id'])
+        custom.delete()
+        return Response(status=status.HTTP_200_OK)
