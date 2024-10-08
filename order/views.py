@@ -5,7 +5,7 @@ from rest_framework.response import Response
 
 from order.models import Order, OrderProduct, Comment, Transaction
 from order.serializers import AddOrderSerializer, AddOrderProductSerializer, OrderSerializer, AddCommentSerializer, \
-    CommentSerializer, AddTransactionSerializer, TransactionSerializer
+    CommentSerializer, AddTransactionSerializer, TransactionSerializer, TransactionOrderSerializer
 from users.models import CustomUser, Vendor, Address
 
 
@@ -183,7 +183,7 @@ def get_transactions(request):
         transactions = transactions.filter(payment_status=request.query_params.get('payment_status'))
     if 'date' in request.query_params:
         transactions = transactions.filter(created_at=request.query_params.get('date'))
-    return Response(TransactionSerializer(transactions, many=True).data)
+    return Response(TransactionOrderSerializer(transactions, many=True).data)
 
 
 

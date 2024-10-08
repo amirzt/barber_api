@@ -27,6 +27,24 @@ class TransactionSerializer(serializers.ModelSerializer):
         model = Transaction
         fields = '__all__'
 
+class TransactionOrderSerializer(serializers.ModelSerializer):
+    products = serializers.SerializerMethodField('get_products')
+
+    @staticmethod
+    def get_products(obj):
+        products = OrderProduct.objects.filter(order=obj)
+        return OrderProductSerializer(products, many=True).data
+
+    class Meta:
+        model = Order
+        fields = ['price', 'product_type', 'products', 'id']
+
+class GetTransactionSerializer(serializers.ModelSerializer):
+    order = TransactionOrderSerializer()
+    class Meta:
+        model = Transaction
+        fields = '__all__'
+
 
 class OrderSerializer(serializers.ModelSerializer):
     user = UserSerializer()
