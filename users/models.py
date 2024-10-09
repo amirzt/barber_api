@@ -1,6 +1,7 @@
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 from django.db import models
+from django.template.defaultfilters import default
 
 from users.managers import CustomUserManager
 
@@ -12,6 +13,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         googleplay = 'googleplay'
         appstore = 'appstore'
         web = 'web'
+        test = 'test'
 
     phone = models.CharField(max_length=20, null=False, blank=False, unique=True)
     name = models.CharField(max_length=100, null=True, blank=True)
@@ -27,6 +29,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     app_type = models.CharField(default=AppType.bazar, choices=AppType.choices, max_length=20)
     version = models.CharField(default='0.0.0', max_length=20)
+    last_ip = models.CharField(default='127.0.0.1', max_length=100)
 
     USERNAME_FIELD = 'phone'
     REQUIRED_FIELDS = []

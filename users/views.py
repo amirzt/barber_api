@@ -106,6 +106,7 @@ def service_lines(request):
     service_line_list = ServiceLine.objects.all()
     return Response(ServiceLineSerializer(service_line_list, many=True).data)
 
+
 @api_view(['GET', 'PUT'])
 @permission_classes([IsAuthenticated])
 def profile(request):
@@ -123,8 +124,8 @@ def profile(request):
             vendor = Vendor.objects.get(user=user)
             if 'name' in request.data:
                 vendor.name = request.data['name']
-            if 'vendor_image' in request.data:
-                vendor.image = request.data['vendor_image']
+            if 'image' in request.data:
+                vendor.image = request.data['image']
             if 'is_active' in request.data:
                 vendor.is_active = request.data['is_active']
             if 'start_hour' in request.data:
@@ -159,10 +160,27 @@ def address(request):
         ad.delete()
         return Response(status=status.HTTP_200_OK)
 
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def change_admin_password(request):
     user = CustomUser.objects.get(phone=request.data['phone'])
     user.set_password(request.data['password'])
+    user.save()
+    return Response(status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def splash(request):
+    user = CustomUser.objects.get(id=request.user.id)
+    if 'version' in request.data:
+        user.version = request.data['version']
+    if 'type' in request.data:
+        user.app_type = request.data['type']
+    try:
+        user.last_ip = request.META.get('REMOTE_ADDR')
+    except:
+        pass
     user.save()
     return Response(status=status.HTTP_200_OK)

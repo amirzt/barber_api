@@ -8,7 +8,7 @@ class CustomUserAdmin(admin.ModelAdmin):
     list_display = ('phone', 'date_joint')
     search_fields = ('phone', 'name')
     fields = (
-        'phone', 'name', 'is_vendor', 'is_visible', 'is_active', 'is_staff', 'app_type', 'version')
+        'phone', 'name', 'is_vendor', 'is_visible', 'is_active', 'is_staff', 'app_type', 'version', 'last_ip')
 
 
 @admin.register(Vendor)

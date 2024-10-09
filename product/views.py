@@ -85,7 +85,7 @@ def product_image(request):
         return Response(status=status.HTTP_200_OK)
 
 
-@api_view(['POST', 'GET', 'PUT'])
+@api_view(['POST', 'GET', 'PUT', 'DELETE'])
 @permission_classes([IsAuthenticated])
 def customization(request):
     user = CustomUser.objects.get(id=request.user.id)
@@ -105,12 +105,14 @@ def customization(request):
 
     elif request.method == 'PUT':
         custom = ProductCustomization.objects.get(id=request.data['id'])
-        serializer = ProductCustomizationSerializer(custom, data=request.data)
-        if serializer.is_valid():
-            serializer.update(custom, request.data)
-            return Response(serializer.data)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        if 'price' in request.data:
+            custom.price = request.data['price']
+        if 'name' in request.data:
+            custom.name = request.data['name']
+        if 'is_active' in request.data:
+            custom.is_active = request.data['is_active']
+        custom.save()
+        return Response(status=status.HTTP_200_OK)
     elif request.method == 'DELETE':
         custom = ProductCustomization.objects.get(id=request.data['id'])
         custom.delete()
