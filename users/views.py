@@ -68,16 +68,16 @@ def register_vendor(request):
                 vendor.image = request.data['image']
                 vendor.save()
             # save serviceLines
-
-            id_list = request.data.get('id_list')
-
-            if not id_list:
-                return Response({'error': 'No ServiceLine selected'}, status=status.HTTP_400_BAD_REQUEST)
-
-            for item in id_list:
-                service_line = VendorServiceLine(vendor=vendor,
-                                                 service_line_id=item)
-                service_line.save()
+            #
+            # id_list = request.data.get('id_list')
+            #
+            # if not id_list:
+            #     return Response({'error': 'No ServiceLine selected'}, status=status.HTTP_400_BAD_REQUEST)
+            #
+            # for item in id_list:
+            #     service_line = VendorServiceLine(vendor=vendor,
+            #                                      service_line_id=item)
+            #     service_line.save()
 
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
