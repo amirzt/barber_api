@@ -8,7 +8,7 @@ from product.models import Product, ProductImage, ProductCustomization
 class ProductAdmin(admin.ModelAdmin):
     list_display = ('name', 'vendor','created_at', 'updated_at')
     search_fields = ('name',)
-    fields = ('name', 'vendor', 'service_line', 'type', 'description', 'is_active', 'stock', 'price', 'discount')
+    fields = ('name', 'vendor', 'service_line', 'type', 'description', 'is_active', 'stock', 'price', 'discount', 'score')
 
 
 @admin.register(ProductImage)

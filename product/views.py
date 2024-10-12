@@ -1,7 +1,7 @@
 from django.core.serializers import serialize
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 
 from product.models import Product, ProductImage, ProductCustomization
@@ -11,13 +11,15 @@ from users.models import CustomUser, Vendor, ServiceLine
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def get_product(request):
-    user = CustomUser.objects.get(id=request.user.id)
-
-    if user.is_vendor:
-        vendor = Vendor.objects.get(user=user)
-        products = Product.objects.filter(vendor=vendor)
+    if request.user.is_authenticated:
+        user = CustomUser.objects.get(id=request.user.id)
+        if user.is_vendor:
+            vendor = Vendor.objects.get(user=user)
+            products = Product.objects.filter(vendor=vendor)
+        else:
+            products = Product.objects.filter(is_active=True)
     else:
         products = Product.objects.filter(is_active=True)
 
@@ -27,6 +29,10 @@ def get_product(request):
         products = products.filter(service_line_id=request.query_params.get('service_line'))
     if 'type' in request.query_params:
         products = products.filter(type=request.query_params.get('type'))
+    if 'sort' in request.query_params:
+        products = products.order_by(request.query_params.get('sort'))
+    if 'search' in request.query_params:
+        products = products.filter(name__contains=request.query_params.get('search'))
     return Response(ProductSerializer(products, many=True).data)
 
 
