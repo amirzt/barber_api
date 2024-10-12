@@ -4,7 +4,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from users.models import CustomUser, Country, City, ServiceLine, Vendor, Customer, Address, VendorServiceLine
+from users.models import CustomUser, Country, City, ServiceLine, Vendor, Customer, Address
 from users.serializers import RegistrationSerializer, AddVendorSerializer, CountrySerializer, CitySerializer, \
     ServiceLineSerializer, VendorSerializer, CustomerSerializer, AddAddressSerializer
 
@@ -15,6 +15,8 @@ def register(request):
     try:
         user = CustomUser.objects.get(phone=request.data['phone'])
 
+        vendor = Vendor.objects.filter(user=user)
+
         if user.check_password(request.data['password']):
             user.is_active = True
             user.save()
@@ -23,7 +25,7 @@ def register(request):
 
             return Response({
                 'token': token.key,
-                'exist': True
+                'exist': True if vendor.count() > 0 else False
             }, status=200)
         else:
             return Response({
@@ -56,7 +58,7 @@ def register(request):
 def register_vendor(request):
     user = request.user
     try:
-        vendor = Vendor.objects.get(user=user)
+        Vendor.objects.get(user=user)
         return Response({"message": "Vendor already exist"}, status=status.HTTP_403_FORBIDDEN)
     except Vendor.DoesNotExist:
         serializer = AddVendorSerializer(data=request.data,
