@@ -15,9 +15,11 @@ class RegistrationSerializer(serializers.ModelSerializer):
         user.set_password(self.validated_data['password'])
         user.save()
 
+        # create wallet
         wallet = Wallet(user=user)
         wallet.save()
 
+        # create customer
         if not user.is_vendor:
             customer = Customer(user=user)
             customer.save()

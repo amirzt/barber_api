@@ -137,7 +137,14 @@ def profile(request):
             vendor.save()
             return Response(status=status.HTTP_200_OK)
         else:
-            pass
+            customer = Customer.objects.get(user=user)
+            if 'name' in request.data:
+                user.name = request.data['name']
+            if 'image' in request.data:
+                customer.image = request.data['image']
+            user.save()
+            customer.save()
+            return Response(status=status.HTTP_200_OK)
 
 
 @api_view(['POST', 'DELETE'])
