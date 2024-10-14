@@ -193,3 +193,13 @@ def splash(request):
         pass
     user.save()
     return Response(status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def vendors(request):
+    all_vendors = Vendor.objects.filter(is_active=True)
+
+    if 'sort' in request.query_params:
+        all_vendors = all_vendors.order_by(request.request.query_params.get('sort'))
+    return Response(VendorSerializer(all_vendors, many=True).data)

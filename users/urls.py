@@ -12,5 +12,6 @@ urlpatterns = [
     path('address/', views.address, name='address'),
     path('change_admin_password/', views.change_admin_password, name='change_admin_password'),
     path('splash/', views.splash, name='product_customization'),
+    path('vendors/', views.vendors, name='vendors'),
 
 ]

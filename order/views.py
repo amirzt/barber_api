@@ -5,8 +5,8 @@ from rest_framework.response import Response
 
 from order.models import Order, OrderProduct, Comment, Transaction
 from order.serializers import AddOrderSerializer, AddOrderProductSerializer, OrderSerializer, AddCommentSerializer, \
-    CommentSerializer, AddTransactionSerializer, TransactionSerializer, TransactionOrderSerializer, \
-    GetTransactionSerializer
+    CommentSerializer, AddTransactionSerializer, GetTransactionSerializer
+from product.models import Product
 from users.models import CustomUser, Vendor, Address
 
 
@@ -14,22 +14,22 @@ from users.models import CustomUser, Vendor, Address
 @permission_classes([IsAuthenticated])
 def create_order(request):
     user = CustomUser.objects.get(id=request.user.id)
-    vendor = Vendor.objects.get(id=request.data['vendor'])
+    product = Product.objects.get(id=request.data['product'])
 
     try:
         order = Order.objects.get(user=user,
-                                  vendor=vendor,
+                                  vendor=product.vendor,
                                   status=Order.OrderStatus.PENDING)
     except Order.DoesNotExist:
         serializer = AddOrderSerializer(data=request.data,
-                                        context={'user': user, 'vendor': vendor})
+                                        context={'user': user, 'vendor': product.vendor})
         if serializer.is_valid():
             order = serializer.save()
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     product_serializer = AddOrderProductSerializer(data=request.data,
-                                               context={'order': order})
+                                                   context={'order': order})
     if product_serializer.is_valid():
         order_product = product_serializer.save()
 
@@ -185,6 +185,3 @@ def get_transactions(request):
     if 'date' in request.query_params:
         transactions = transactions.filter(created_at=request.query_params.get('date'))
     return Response(GetTransactionSerializer(transactions, many=True).data)
-
-
-

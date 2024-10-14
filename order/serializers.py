@@ -27,6 +27,7 @@ class TransactionSerializer(serializers.ModelSerializer):
         model = Transaction
         fields = '__all__'
 
+
 class TransactionOrderSerializer(serializers.ModelSerializer):
     products = serializers.SerializerMethodField('get_products')
 
@@ -39,8 +40,10 @@ class TransactionOrderSerializer(serializers.ModelSerializer):
         model = Order
         fields = ['price', 'product_type', 'products', 'id']
 
+
 class GetTransactionSerializer(serializers.ModelSerializer):
     order = TransactionOrderSerializer()
+
     class Meta:
         model = Transaction
         fields = '__all__'
@@ -98,7 +101,8 @@ class AddOrderProductSerializer(serializers.ModelSerializer):
                                      quantity=self.validated_data['quantity'],
                                      price=(self.validated_data['customization'].price
                                             + (self.validated_data['product'].price *
-                                               ((100 -Product.objects.get(id=self.validated_data['product'].id).discount) / 100)))
+                                               ((100 - Product.objects.get(
+                                                   id=self.validated_data['product'].id).discount) / 100)))
                                            * self.validated_data['quantity']
                                      )
         order_product.save()
